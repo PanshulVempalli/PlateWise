@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PlateWise – School lunch waste simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef2f0;--surf:#fbfdfc;--ink:#14262b;--mute:#52666b;--line:#d3dedb;--blue:#2c5fd1;--pea:#2f7d2b;--carrot:#b4560a;--panel:#14262b;--pink:#eaf2ef;--pmute:#a6bcbf;--pline:#2d474d;--pgood:#8fe083;--pbad:#ffa65c;--soft:#e2eae7;--nbg:#fdf0df;--nink:#7a3d05;
+--hd:"Bricolage Grotesque","Avenir Next","Trebuchet MS",system-ui,sans-serif;--bd:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d181b;--surf:#142226;--ink:#e6efec;--mute:#98adb0;--line:#263a3e;--blue:#8fb0ff;--pea:#7fcf72;--carrot:#ffa65c;--panel:#1b3238;--soft:#1a2c31;--nbg:#33260f;--nink:#f2c486;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0d181b;--surf:#142226;--ink:#e6efec;--mute:#98adb0;--line:#263a3e;--blue:#8fb0ff;--pea:#7fcf72;--carrot:#ffa65c;--panel:#1b3238;--soft:#1a2c31;--nbg:#33260f;--nink:#f2c486;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--bd)}
+main{max-width:1060px;margin:0 auto;padding:22px 18px 56px}
+h1{font:800 clamp(2.4rem,7vw,3.8rem)/1 var(--hd);letter-spacing:-.035em;margin:0;display:flex;align-items:center;gap:12px}
+h1 svg{width:.8em;height:.8em;flex:none;color:var(--blue)}
+h2{font:600 1.2rem/1.2 var(--hd);letter-spacing:-.01em;margin:0 0 .7em}
+p{max-width:64ch}.lede{font-size:1.1rem;color:var(--mute);margin:.6em 0 0;max-width:56ch}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:6px}
+nav{display:flex;gap:22px;margin:22px 0 20px;border-bottom:1px solid var(--line);overflow-x:auto}
+nav button{border:0;background:none;color:var(--mute);padding:8px 0;font:600 1rem var(--bd);border-bottom:3px solid transparent;margin-bottom:-1px;white-space:nowrap}
+nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--blue)}
+.layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:34px;align-items:start}
+.panelcol{position:sticky;top:16px}
+@media (max-width:860px){.layout{grid-template-columns:1fr}.panelcol{position:static;order:-1}}
+.sect{padding:0 0 22px;margin-bottom:22px;border-bottom:1px solid var(--line)}
+.sect:last-child{border-bottom:0}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:16px}
+label{display:block;font-weight:600;margin:12px 0 4px;font-size:.9rem}
+select,input[type=number]{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:8px;background:var(--surf);color:var(--ink);font:inherit}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:2px 14px}
+.panel{background:var(--panel);color:var(--pink);border-radius:20px;padding:26px 24px 22px}
+.panel small,.panel .fine,.panel .k{color:var(--pmute)}.panel .k{margin:0;font-size:.95rem}
+.num{font:800 clamp(3.2rem,9vw,5rem)/1 var(--hd);letter-spacing:-.04em;margin:.12em 0 .1em}
+.panel .yr{margin:0 0 6px;font-size:1.05rem}
+.gauge{position:relative;height:118px;margin:14px 6px 6px}
+.track{position:absolute;left:0;right:0;top:22px;height:10px;border-radius:6px;background:linear-gradient(90deg,#2f6b45,#7a8f3a 45%,#c4772a 75%,#d4552d)}
+.tick{position:absolute;top:22px;width:1px;background:var(--pink);opacity:.7}.tick.a{height:36px}.tick.b{height:72px}
+.tick span{position:absolute;top:100%;left:0;white-space:nowrap;font-size:.78rem;color:var(--pmute);padding-top:3px;transform:translateX(-4px)}
+.dot{position:absolute;top:15px;width:24px;height:24px;margin-left:-12px;border-radius:50%;background:var(--pink);border:4px solid var(--panel);box-shadow:0 0 0 2px var(--pink);transition:left .45s cubic-bezier(.3,.8,.3,1)}
+.dot.h{background:var(--panel);border-color:var(--pgood);box-shadow:0 0 0 2px var(--pgood);display:none}
+@media (prefers-reduced-motion:reduce){.dot{transition:none}}
+.legend{display:flex;gap:16px;font-size:.85rem;color:var(--pmute);margin:0 0 4px}
+.cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--pline)}
+.cmp b{display:block;font:800 1.6rem/1.1 var(--hd);letter-spacing:-.02em}.cmp .dn{color:var(--pgood)}.cmp .up{color:var(--pbad)}
+.panel .tag{background:var(--pline);color:var(--pink)}.panel .tag.w{background:#5a4220;color:#ffd9a3}
+.big{font:800 1.9rem/1.1 var(--hd);letter-spacing:-.02em;color:var(--blue)}.neg{color:var(--carrot)}
+.note{background:var(--nbg);color:var(--nink);border-radius:8px;padding:10px 13px;font-size:.9rem;margin-top:12px;max-width:68ch}
+.bar{height:8px;background:var(--soft);border-radius:6px;overflow:hidden;margin:4px 0 2px}.bar>i{display:block;height:100%;background:var(--pea);border-radius:6px}
+.rec{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.tag{font-size:.75rem;font-weight:600;border-radius:999px;padding:2px 9px;background:var(--soft);color:var(--pea);white-space:nowrap;align-self:start}.tag.w{background:var(--nbg);color:var(--nink)}
+.seg{display:flex;gap:2px;background:var(--soft);padding:3px;border-radius:999px}.seg button{border:0;background:none;color:var(--mute);padding:5px 14px;border-radius:999px;font-weight:600}.seg button.on{background:var(--surf);color:var(--ink)}
+.tbl{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.88rem}th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line)}th{font-weight:600;color:var(--mute)}
+small,.mute{color:var(--mute)}.hide{display:none}
+textarea{width:100%;height:90px;font:12px ui-monospace,monospace;background:var(--surf);color:var(--ink);border:1px solid var(--line);border-radius:8px}
+.btn{border:1px solid var(--line);background:var(--surf);color:var(--ink);padding:8px 14px;border-radius:8px;font-weight:600}.btn.p{background:var(--blue);color:#fff;border-color:var(--blue)}
+:root[data-theme="dark"] .btn.p{color:#0d181b}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.p{color:#0d181b}}
+svg{max-width:100%;height:auto}
+</style>
+</head>
+<body>
+<main>
+<div class="top"><div><h1><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="42" height="32" rx="7"/><path d="M20 8v32M20 24h25"/></svg>PlateWise</h1>
+<p class="lede">See how much lunch a school like yours throws away, and which changes are linked to less.</p></div><div class="seg" id="units"><button data-u="m" class="on">Metric</button><button data-u="i">Imperial</button></div></div>
+<nav role="tablist"><button role="tab" aria-selected="true" data-t="sim">Simulator</button><button role="tab" aria-selected="false" data-t="audit">Audit tracker</button><button role="tab" aria-selected="false" data-t="evidence">Evidence & limits</button></nav>
+
+<section id="sim"><div class="layout">
+<div>
+<div class="sect"><h2>Your school</h2><div class="grid" id="ctx"></div></div>
+<div class="sect"><h2>Your lunch service today</h2><div class="grid" id="cur"></div></div>
+<div class="sect"><h2>What if we changed…</h2><div class="grid" id="scn"></div></div>
+</div>
+<div class="panelcol"><div class="panel" aria-live="polite">
+<p class="k">Estimated waste per student, per lunch</p>
+<div class="num" id="r_big">–</div>
+<p class="yr" id="r_yr"></p>
+<div class="gauge" aria-hidden="true"><div class="track"></div>
+<div class="tick a" id="ta_" style="left:28.25%"><span id="t_o"></span></div>
+<div class="tick b" id="tb_" style="left:42.9%"><span id="t_e"></span></div>
+<div class="dot" id="g0"></div><div class="dot h" id="g1"></div></div>
+<div class="legend"><span>● Today</span><span>○ If you change it</span></div>
+<div id="sres"></div>
+<p class="fine" style="font-size:.85rem;margin:14px 0 0">Model estimate (R² 0.52). Real schools vary a lot, so weigh yours in the Audit tracker.</p>
+</div></div>
+</div>
+<div style="margin-top:26px"><h2>Every single change, ranked</h2><div id="rank"></div>
+<div class="note">These are <b>associations</b>, not proven effects, and they overlap, so don’t add them up. “Strong evidence” means statistically significant at p&lt;0.05 in the paper. Test one change at a time and re-measure in the Audit tracker.</div></div>
+</section>
+
+<section id="audit" class="hide">
+<div class="card"><h2>Log a weigh-in</h2>
+<p class="mute" style="margin-top:0">Weigh all plate and drink waste from one lunch, count students served, and tag it <b>before</b> or <b>after</b> you make a change. Saved only in this browser.</p>
+<div class="grid">
+<div><label for="a_w">Waste weighed</label><input id="a_w" type="number" min="0" step="0.1"></div>
+<div><label for="a_u">Unit</label><select id="a_u"><option value="kg">kg</option><option value="lb">lb</option></select></div>
+<div><label for="a_s">Students served</label><input id="a_s" type="number" min="1"></div>
+<div><label for="a_p">When</label><select id="a_p"><option value="b">Before a change</option><option value="a">After a change</option></select></div>
+</div><p><button class="btn p" id="a_add">Add entry</button> <button class="btn" id="a_csv">Show CSV</button> <button class="btn" id="a_clr">Clear all</button></p><textarea id="a_ta" class="hide" readonly></textarea></div>
+<div class="card" id="a_out"></div>
+</section>
+
+<section id="evidence" class="hide">
+<div class="card"><h2>Source</h2>
+<p>Adjapong, Bender, Schaefer &amp; Roe (2024), <i>School and meal characteristics associated with plate waste in K-12 cafeterias in the United States</i>, PLOS ONE 19(12): e0299043, CC BY 4.0. Nearly 500 weighed audits from 134 schools in 24 states (2018–2023), supplied by World Wildlife Fund’s Food Waste Warriors programme.</p>
+<p>The simulator uses <b>Table 3, column 1</b>: a regression where ln(waste, lb per student per meal) = −1.103 + Σ coefficients + 0.0286 × (number of entrées). R² = 0.522, n = 489. A coefficient c means waste is multiplied by e<sup>c</sup>, so −0.496 is −39%. Every coefficient is listed below.</p>
+<div class="tbl"><table id="ctab"></table></div>
+<p class="mute">*** p&lt;0.01, ** p&lt;0.05, * p&lt;0.10, blank = not significant. “Outside US” uses the average of the four US region coefficients, which is our approximation, not the paper’s.</p></div>
+<div class="card"><h2>Limits, honestly</h2><ul>
+<li><b>Correlation, not cause.</b> No before-and-after data, so the authors say interventions cannot be rigorously evaluated.</li>
+<li><b>Self-selected US sample,</b> 88% of observations from schools under 500 students, only 134 schools. UK and other schools may differ.</li>
+<li><b>Predictions are rough.</b> Audits varied widely (SD 0.181 lb per student). Treat results as a starting estimate; the model reproduces the mean but not any individual school. Back-transforming a log model also tends to underestimate slightly.</li>
+<li><b>Measures are single-day.</b> The paper’s average school gave 3.9 audits. Repeat yours on several days.</li>
+<li><b>Surprises left as findings.</b> Offer-vs-serve was linked to more waste in older students; we show it but don’t recommend on it.</li>
+<li><b>Context, not used in the model.</b> USDA estimated 21% of calories served became waste in 2014/15; a Swedish canteen study (2026) found older students wasted about twice as much as younger ones, the reverse of the US pattern (summary page only).</li></ul></div>
+<div class="card"><h2>Privacy and build</h2><p>Plain HTML, CSS and JavaScript. No server, no tracking. Audit entries stay in your browser. AI tools helped write the code; the team checked the figures against the paper.</p></div>
+</section>
+</main>
+<script>
+var LB=0.45359237,C0=-1.103,CE=0.0286,U="m",sel={};
+// [label, coefficient, significance 0-3 (3 = p<0.01)]
+var G=[
+{k:"age",l:"Age group",x:1,o:[["Elementary (primary)",0,0],["Middle / high (secondary)",-0.470,3]]},
+{k:"size",l:"School size",x:1,o:[["Under 500 students",0,0],["500–999",-0.782,3],["1,000+",-0.167,0]]},
+{k:"frl",l:"Students on free/reduced-price lunch",x:1,o:[["Under 25%",0,0],["25–49%",0.239,3],["50–74%",0.333,3],["75% or more",0.0569,0]]},
+{k:"reg",l:"Region",x:1,o:[["US Northeast",0,0],["US West",-0.205,1],["US Midwest",-0.321,2],["US South",0.0966,0],["Outside the US (avg of regions)",-0.107,0]]},
+{k:"season",l:"Season of audit",x:1,o:[["Spring",0,0],["Summer",-0.0379,0],["Autumn",0.125,0],["Winter",0.192,3]]},
+{k:"ovs",l:"Meal service mode",x:1,o:[["Serve (all items given)",0,0],["Offer (can decline items)",0.323,3]]},
+{k:"start",l:"Lunch starts",o:[["Before 11:00",0,0],["11:00–11:59",-0.155,2],["Noon or later",-0.287,3]]},
+{k:"len",l:"Lunch length",o:[["Under 30 minutes",0,0],["30 minutes",-0.00409,0],["Over 30 minutes",-0.00526,0]]},
+{k:"milk",l:"Milk served",o:[["Single cartons",0,0],["Dispenser or jug",-0.496,3]]},
+{k:"act",l:"Waste-reduction actions",o:[["None",0,0],["One lesson-based action",0.0364,0],["Lessons + other actions",-0.101,0],["One behaviour action (e.g. share table)",-0.270,2],["Several behaviour actions",-0.0362,0]]}
+];
+var LV=["start","len","milk","act"],S={age:0,size:0,frl:0,reg:4,season:0,ovs:1,start:1,len:1,milk:0,act:0},T={};
+var A=[];try{A=JSON.parse(localStorage.getItem("pw_audit")||"[]")}catch(e){A=[]}
+function $(i){return document.getElementById(i)}
+function f(x,d){return x.toLocaleString(undefined,{maximumFractionDigits:d==null?0:d})}
+function gi(k){return G.filter(function(g){return g.k===k})[0]}
+function pred(st,e){var s=C0+CE*e;G.forEach(function(g){s+=g.o[st[g.k]][1]});return Math.exp(s)}
+function nums(){return{n:Math.max(1,+$("n").value||1),d:Math.max(1,+$("days").value||1),e:Math.max(0,+$("ent").value||0)}}
+function wt(lb){return U==="m"?f(lb*LB*1000)+" g":f(lb*16,1)+" oz"}
+function yr(lb,N){var t=lb*N.n*N.d;return U==="m"?f(t*LB/1000,1)+" tonnes":f(t/2000,1)+" US tons"}
+function mk(id,g,st,pre){return '<div><label for="'+pre+g.k+'">'+g.l+'</label><select id="'+pre+g.k+'">'+g.o.map(function(o,i){return '<option value="'+i+'"'+(st[g.k]==i?" selected":"")+'>'+o[0]+'</option>'}).join("")+'</select></div>'}
+function build(){
+ var n='<div><label for="n">Students served per day</label><input id="n" type="number" min="1" value="300"></div><div><label for="days">School days per year</label><input id="days" type="number" min="1" value="180"></div><div><label for="ent">Entrée options offered</label><input id="ent" type="number" min="0" value="2"></div>';
+ $("ctx").innerHTML=G.filter(function(g){return g.x}).map(function(g){return mk(0,g,S,"c_")}).join("")+n;
+ LV.forEach(function(k){T[k]=S[k]});
+ $("cur").innerHTML=LV.map(function(k){return mk(0,gi(k),S,"c_")}).join("");
+ $("scn").innerHTML=LV.map(function(k){return mk(0,gi(k),T,"s_")}).join("");
+ document.querySelectorAll("#sim select").forEach(function(el){el.addEventListener("change",function(){
+  var id=el.id,k=id.slice(2),v=+el.value;
+  if(id[0]==="c"){var old=S[k];S[k]=v;if(T[k]!==undefined&&T[k]==old){T[k]=v;$("s_"+k).value=v}}else T[k]=v;run()})});
+ document.querySelectorAll("#sim input").forEach(function(el){el.addEventListener("input",run)});
+}
+function run(){
+ var N=nums(),p0=pred(S,N.e),st=Object.assign({},S,T),p1=pred(st,N.e),dl=p1/p0-1;
+ var pos=function(p){return Math.min(97,Math.max(3,p/0.8*100))};$("r_big").textContent=wt(p0);$("r_yr").textContent=yr(p0,N)+" a year at "+f(N.n)+" students × "+f(N.d)+" days";$("g0").style.left=pos(p0)+"%";$("t_o").textContent="Secondary schools, study average "+wt(0.226);$("t_e").textContent="Primary schools, study average "+wt(0.343);
+ var ch=LV.filter(function(k){return T[k]!=S[k]});
+ var weak=ch.some(function(k){return gi(k).o[T[k]][2]<2&&gi(k).o[T[k]][1]!==gi(k).o[S[k]][1]});
+ $("g1").style.display=ch.length?"block":"none";$("g1").style.left=pos(p1)+"%";
+ $("sres").innerHTML=ch.length?'<div class="cmp"><div><b class="'+(dl>0?"up":"dn")+'">'+(dl>0?"+":"")+f(dl*100,1)+'%</b><small>change in waste</small></div><div><b>'+wt(p1)+'</b><small>per student</small></div><div><b class="'+(dl>0?"up":"dn")+'">'+(dl>0?"+":"−")+yr(Math.abs(p1-p0),N)+'</b><small>per year</small></div></div><p class="fine" style="margin:12px 0 0"><span class="tag '+(weak?"w":"")+'">'+(weak?"Includes weak evidence":"Strong evidence")+'</span> <small>Combines several coefficients as if independent: a rough guide.</small></p>':'<p class="fine" style="margin:12px 0 0">Change an option under “What if we changed…” to compare it with today.</p>';
+ var R=[];
+ LV.forEach(function(k){var g=gi(k);g.o.forEach(function(o,i){if(i===S[k])return;var d=Math.exp(o[1]-g.o[S[k]][1])-1;if(d<-0.005)R.push({d:d,t:g.l+": "+g.o[S[k]][0]+" → "+o[0],s:o[2]>=2,sv:p0*(-d)})})});
+ R.sort(function(a,b){return a.d-b.d});
+ var h=R.length?"":'<p>You already use the lowest-waste option for each lever in this model.</p>',m=R.length?-R[0].d:1;
+ R.forEach(function(r){h+='<div class="rec"><b>'+r.t+'</b><span class="tag '+(r.s?"":"w")+'">'+(r.s?"Strong evidence":"Weak evidence")+'</span><span><small>'+f(r.d*100,1)+'% · about '+wt(r.sv)+' less per student, '+yr(r.sv,N)+' a year</small><div class="bar"><i style="width:'+Math.round(-r.d/m*100)+'%"></i></div></span></div>'});
+ $("rank").innerHTML=h;
+ aud();
+}
+function aud(){
+ var N=nums(),p0=pred(S,N.e),o=$("a_out");
+ var rows=A.map(function(a,i){return{i:i,v:a.w/a.s,p:a.p}});
+ if(!rows.length){o.innerHTML='<span class="mute">No entries yet. Add your first weigh-in above.</span>';return}
+ var mean=function(p){var r=rows.filter(function(x){return x.p===p});return r.length?r.reduce(function(s,x){return s+x.v},0)/r.length:null},mb=mean("b"),ma=mean("a");
+ var h='<h2>Your results</h2><div class="grid"><div><div class="big">'+(mb==null?"–":wt(mb))+'</div><small>average before</small></div><div><div class="big">'+(ma==null?"–":wt(ma))+'</div><small>average after</small></div><div><div class="big">'+wt(p0)+'</div><small>model estimate for your traits</small></div></div>';
+ if(mb!=null&&ma!=null){var c=ma/mb-1;h+='<p>Change after your intervention: <b class="'+(c>0?"neg":"")+'">'+(c>0?"+":"")+f(c*100,1)+'%</b>. '+(rows.filter(function(x){return x.p==="a"}).length<3||rows.filter(function(x){return x.p==="b"}).length<3?"With fewer than 3 audits in each group this is a hint, not evidence; keep measuring.":"Day-to-day swings are large, so look at whether the gap is bigger than the spread between your entries.")+'</p>'}
+ var mx=Math.max.apply(null,rows.map(function(x){return x.v}).concat([p0]))*1.15,W=600,H=170,bw=Math.min(40,(W-50)/rows.length-6),svg='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Waste per student for each audit">';
+ rows.forEach(function(x,j){var bh=x.v/mx*(H-30),X=40+j*((W-50)/rows.length);svg+='<rect x="'+X+'" y="'+(H-20-bh)+'" width="'+bw+'" height="'+bh+'" rx="3" style="fill:'+(x.p==="a"?"var(--acc)":"var(--mute)")+'"/><text x="'+(X+bw/2)+'" y="'+(H-6)+'" text-anchor="middle" font-size="10" style="fill:var(--mute)">'+(j+1)+'</text>'});
+ var py=H-20-p0/mx*(H-30);svg+='<line x1="36" x2="'+W+'" y1="'+py+'" y2="'+py+'" stroke-dasharray="5 4" style="stroke:var(--bad)"/><text x="40" y="'+(py-4)+'" font-size="11" style="fill:var(--bad)">model estimate</text></svg>';
+ h+=svg+'<p><small>Grey = before, green = after. Dashed line = model estimate.</small></p><div class="tbl"><table><tr><th>#</th><th>When</th><th>Per student</th><th></th></tr>'+rows.map(function(x){return '<tr><td>'+(x.i+1)+'</td><td>'+(x.p==="a"?"After":"Before")+'</td><td>'+wt(x.v)+'</td><td><button class="btn" data-del="'+x.i+'" aria-label="Delete entry '+(x.i+1)+'">Delete</button></td></tr>'}).join("")+'</table></div>';
+ o.innerHTML=h;
+ o.querySelectorAll("[data-del]").forEach(function(b){b.addEventListener("click",function(){A.splice(+b.dataset.del,1);sv();aud()})});
+}
+function sv(){try{localStorage.setItem("pw_audit",JSON.stringify(A))}catch(e){}}
+$("a_add").addEventListener("click",function(){var w=+$("a_w").value,s=+$("a_s").value;if(!(w>0)||!(s>0))return;A.push({w:$("a_u").value==="kg"?w/LB:w,s:s,p:$("a_p").value});sv();$("a_w").value="";aud()});
+$("a_clr").addEventListener("click",function(){A=[];sv();aud()});
+$("a_csv").addEventListener("click",function(){var t=$("a_ta");t.value="entry,when,lb_per_student\n"+A.map(function(a,i){return(i+1)+","+(a.p==="a"?"after":"before")+","+(a.w/a.s).toFixed(4)}).join("\n");t.classList.toggle("hide")});
+document.querySelectorAll("#units button").forEach(function(b){b.addEventListener("click",function(){U=b.dataset.u;document.querySelectorAll("#units button").forEach(function(x){x.classList.toggle("on",x===b)});run()})});
+document.querySelectorAll("nav button").forEach(function(b){b.addEventListener("click",function(){
+ document.querySelectorAll("nav button").forEach(function(x){x.setAttribute("aria-selected",x===b)});
+ ["sim","audit","evidence"].forEach(function(id){$(id).classList.toggle("hide",id!==b.dataset.t)});
+ try{history.replaceState(null,"","#"+b.dataset.t)}catch(e){}})});
+var rowsT='<tr><th>Factor</th><th>Option</th><th>Coefficient</th><th>Effect on waste</th><th>Sig.</th></tr>';
+G.forEach(function(g){g.o.forEach(function(o,i){rowsT+='<tr><td>'+(i?"":g.l)+'</td><td>'+o[0]+'</td><td>'+(i?o[1]:"baseline")+'</td><td>'+(i?(Math.exp(o[1])-1>0?"+":"")+f((Math.exp(o[1])-1)*100,1)+"%":"–")+'</td><td>'+["","*","**","***"][o[2]]+'</td></tr>'})});
+$("ctab").innerHTML=rowsT+'<tr><td>Entrées offered</td><td>per extra entrée</td><td>0.0286</td><td>+2.9%</td><td>*</td></tr>';
+build();run();
+var hv=(location.hash||"").slice(1);if(hv==="audit"||hv==="evidence")document.querySelector('nav button[data-t="'+hv+'"]').click();
+</script>
+</body>
+</html>
